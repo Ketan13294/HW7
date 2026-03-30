@@ -20,7 +20,7 @@ class MyData(Dataset):
 
 
 # train model
-def train_model(loadname):
+def train_model(loadname, output_name):
 
     # training parameters
     print("[-] training bc")
@@ -55,10 +55,15 @@ def train_model(loadname):
             loss.backward()
             optimizer.step()
             
-        if epoch % 500 == 0:
+        if epoch % 100 == 0:
             print(epoch, loss.item())
-            torch.save(model.state_dict(), "model_weights")
+            torch.save(model.state_dict(), output_name)
 
 # train models
 if __name__ == "__main__":
-    train_model("dataset.pkl")
+    for dataset_type in  ["narrow","wide"]: # "narrow" or "wide"
+        for n_demos in [1,10,20]:
+            filename = "data/dataset_" + str(n_demos) + "_" + str(dataset_type) + ".pkl"
+            output_name = "data/model_weights_" + str(n_demos) + "_" + str(dataset_type)
+            print("training model with dataset:", filename)
+            train_model(filename,output_name)

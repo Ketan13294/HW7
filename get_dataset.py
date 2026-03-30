@@ -34,37 +34,42 @@ panda = Panda(basePosition=[0, 0, 0],
 
 # collect the demonstrations
 # these demonstrations move from the robot's home position to the cube position
-n_demos = 10
-dataset = []
-action_magnitude = 0.1
-for demo_idx in range(n_demos):
+for dataset_type in  ["narrow","wide"]: # "narrow" or "wide"
+    for n_demos in [1,10,20]:
+        dataset = []
+        action_magnitude = 0.1
+        for demo_idx in range(n_demos):
 
-    # reset the robot
-    panda.reset(jointStartPositions)
-    cube_position = np.random.uniform([0.3, -0.3, 0.025], [0.7, +0.3, 0.025])
-    p.resetBasePositionAndOrientation(cube, cube_position, p.getQuaternionFromEuler([0, 0, 0]))
+            # reset the robot
+            panda.reset(jointStartPositions)
+            if dataset_type == "narrow":
+                cube_position = np.random.uniform([0.3, -0.1, 0.025], [0.5, +0.1, 0.025])
+            elif dataset_type == "wide":
+                cube_position = np.random.uniform([0.2, -0.3, 0.025], [0.6, +0.3, 0.025])
+            p.resetBasePositionAndOrientation(cube, cube_position, p.getQuaternionFromEuler([0, 0, 0]))
 
-    # run sequence of position and gripper commands
-    for time_idx in range (1000):
+            # run sequence of position and gripper commands
+            for time_idx in range (1000):
 
-        # get the robot's position
-        robot_state = panda.get_state()
-        robot_pos = np.array(robot_state["ee-position"])
+                # get the robot's position
+                robot_state = panda.get_state()
+                robot_pos = np.array(robot_state["ee-position"])
 
-        # select the robot's action
-        action = cube_position - robot_pos
-        if np.linalg.norm(action) > action_magnitude:
-            action *= action_magnitude / np.linalg.norm(action)
+                # select the robot's action
+                action = cube_position - robot_pos
+                if np.linalg.norm(action) > action_magnitude:
+                    action *= action_magnitude / np.linalg.norm(action)
 
-        # store the state-action pair
-        state = robot_pos.tolist() + cube_position.tolist()
-        dataset.append(state + action.tolist())
+                # store the state-action pair
+                state = robot_pos.tolist() + cube_position.tolist()
+                dataset.append(state + action.tolist())
 
-        # move the robot with action
-        panda.move_to_pose(robot_pos + action, ee_rotz=0, positionGain=0.01)
-        p.stepSimulation()
-        time.sleep(control_dt)
+                # move the robot with action
+                panda.move_to_pose(robot_pos + action, ee_rotz=0, positionGain=0.01)
+                p.stepSimulation()
+                time.sleep(control_dt)
 
-# save the dataset of demonstrations
-pickle.dump(dataset, open("dataset.pkl", "wb"))
-print("dataset has this many state-action pairs:", len(dataset))
+        # save the dataset of demonstrations
+        filename = "data/dataset_"+ str(n_demos) + "_" + str(dataset_type) +".pkl"
+        pickle.dump(dataset, open(filename, "wb"))
+        print("dataset has this many state-action pairs:", len(dataset))

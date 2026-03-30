@@ -34,7 +34,7 @@ panda = Panda(basePosition=[0, 0, 0],
 
 # load the trained model
 model = MLPPolicy(state_dim=6, hidden_dim=64, action_dim=3)
-model.load_state_dict(torch.load('model_weights'))
+model.load_state_dict(torch.load('data/model_weights_1_wide'))
 model.eval()
 
 # test and see how your learned policy does!
@@ -44,7 +44,10 @@ for test_idx in range(n_tests):
 
     # reset the robot
     panda.reset(jointStartPositions)
-    cube_position = np.random.uniform([0.3, -0.3, 0.025], [0.7, +0.3, 0.025])
+    #Wide
+    cube_position = np.random.uniform([0.2, -0.3, 0.025], [0.6, +0.3, 0.025])
+    #Narrow
+    # cube_position = np.random.uniform([0.3, -0.1, 0.025], [0.5, +0.1, 0.025])
     p.resetBasePositionAndOrientation(cube, cube_position, p.getQuaternionFromEuler([0, 0, 0]))
 
     # run sequence of position and gripper commands
